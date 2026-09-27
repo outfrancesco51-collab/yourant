@@ -15,10 +15,10 @@ body:
             My version of the app is the latest available
           required: true
         - label: >-
-            I have checked open and closed [issues](https://github.com/5rahim/seanime/issues)
+            I have checked open and closed [issues](https://github.com/outfrancesco51/Yourant/issues)
           required: true
         - label: >-
-            I have checked the [docs](https://seanime.app/docs) for a fix
+            I have checked the [docs](https://Yourant.app/docs) for a fix
           required: true
   - type: dropdown
     id: '2'
@@ -97,7 +97,7 @@ body:
     id: '9'
     attributes:
       label: App Version
-      description: Enter the version of Seanime you are using.
+      description: Enter the version of Yourant you are using.
       placeholder: v1.0.0
     validations:
       required: true

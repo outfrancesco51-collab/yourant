@@ -4,8 +4,10 @@ import (
 	"context"
 	"yourant/internal/anilist"
 	"yourant/internal/downloader"
+	"yourant/internal/ountsu"
 	"yourant/internal/party"
 	"yourant/internal/storage"
+	"yourant/internal/community"
 )
 
 // RouterConfig holds configuration parameters for the HTTP router.
@@ -14,6 +16,9 @@ type RouterConfig struct {
 	StaticDir    string
 	Version      string
 	PartyHub     *party.Hub
+	OuntsuHub    *ountsu.Hub
+	BanSystem    *community.BanSystem
+	AutoMod      *community.AutoMod
 }
 
 // AniListService defines required operations for anime metadata.

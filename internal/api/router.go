@@ -5,6 +5,8 @@ import (
 	"os"
 	"time"
 
+	"yourant/internal/community"
+	"yourant/internal/ountsu"
 	"yourant/internal/party"
 )
 
@@ -15,6 +17,9 @@ type Handler struct {
 	storage    StorageService
 	downloader DownloadService
 	partyHub   *party.Hub
+	ountsuHub  *ountsu.Hub
+	banSystem  *community.BanSystem
+	autoMod    *community.AutoMod
 	startTime  time.Time
 }
 
@@ -35,6 +40,9 @@ func NewRouter(cfg RouterConfig, anilist AniListService, storage StorageService,
 		storage:    storage,
 		downloader: downloader,
 		partyHub:   partyHub,
+		ountsuHub:  cfg.OuntsuHub,
+		banSystem:  cfg.BanSystem,
+		autoMod:    cfg.AutoMod,
 		startTime:  time.Now(),
 	}
 
@@ -67,6 +75,14 @@ func NewRouter(cfg RouterConfig, anilist AniListService, storage StorageService,
 	mux.HandleFunc("/api/watchparty/ws", h.HandleWatchPartyWS)
 	mux.HandleFunc("GET /api/watchparty/code", h.HandleCreateRoomCode)
 	mux.HandleFunc("POST /api/watchparty/code", h.HandleCreateRoomCode)
+
+	// Ountsu
+	mux.HandleFunc("/api/ountsu/ws", h.HandleOuntsuWS)
+	mux.HandleFunc("POST /api/ountsu/invite", h.HandleOuntsuInvite)
+
+	// Community
+	mux.HandleFunc("GET /api/community/ban/{id}", h.HandleGetBanStatus)
+	mux.HandleFunc("POST /api/community/post", h.HandleCommunityPost)
 
 	// 7. Optional static frontend file server
 	if cfg.StaticDir != "" {

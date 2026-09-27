@@ -953,3 +953,85 @@ html, body {
 
 /* ==================== Utility Classes ==================== */
 .hidden { display: none !important; }
+
+/* ==================== Ountsu Voice Widget ==================== */
+.ountsu-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  backdrop-filter: blur(16px);
+  z-index: 10000;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ountsu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.ountsu-badge {
+  font-size: 0.7rem;
+  background: var(--blood-bright);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.ountsu-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.ountsu-btn {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.ountsu-btn:hover {
+  background: var(--metallic-cobalt);
+}
+
+.ountsu-btn.active {
+  background: var(--blood-crimson);
+  border-color: var(--blood-vivid);
+}
+
+.ountsu-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.ountsu-input {
+  flex: 1;
+  background: var(--bg-void);
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.ountsu-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+

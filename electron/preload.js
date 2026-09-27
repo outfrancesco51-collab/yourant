@@ -44,6 +44,7 @@ const ALLOWED_SEND_CHANNELS = [
   "window:hide",
   "window:show",
   "startup:renderer-ready",
+  "update-presence",
 ];
 
 const ALLOWED_EMIT_CHANNELS = [
@@ -145,6 +146,14 @@ contextBridge.exposeInMainWorld("electron", {
     sendSubtitleHeader: (header) => ipcRenderer.invoke("cast:sendSubtitleHeader", header),
     disableSubtitles: () => ipcRenderer.invoke("cast:disableSubtitles"),
     getLanIP: () => ipcRenderer.invoke("cast:getLanIP"),
+  },
+
+  discord: {
+    updatePresence: (data) => ipcRenderer.send("update-presence", data),
+  },
+
+  animeunity: {
+    extractStream: (url) => ipcRenderer.invoke("extract-animeunity-stream", url),
   },
 });
 

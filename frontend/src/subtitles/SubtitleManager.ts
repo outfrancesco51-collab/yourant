@@ -27,6 +27,10 @@ export class SubtitleManager extends EventTarget {
   private currentTrack: SubtitleTrack | null = null;
   private delay: number = 0; // seconds
 
+  // AI Subtitles Translation System
+  public aiTranslationEnabled: boolean = false;
+  public targetLanguage: string = 'en';
+
   constructor(video: HTMLVideoElement, container: HTMLElement) {
     super();
     this.video = video;
@@ -177,6 +181,9 @@ export class SubtitleManager extends EventTarget {
       }
 
       if (content) {
+        if (this.aiTranslationEnabled) {
+          content = await this.translateSubtitles(content, this.targetLanguage);
+        }
         await this.jassubRenderer.setTrack(content);
       } else {
         await this.jassubRenderer.clear();
@@ -294,6 +301,48 @@ export class SubtitleManager extends EventTarget {
     }
     this.tracks = [];
     this.currentTrack = null;
+  }
+
+  /**
+   * Enables real-time AI subtitle translation.
+   */
+  public enableAITranslation(lang: string = 'en'): void {
+    this.aiTranslationEnabled = true;
+    this.targetLanguage = lang;
+    if (this.currentTrack) {
+      this.selectTrack(this.currentTrack.id); // Reload track to apply translation
+    }
+  }
+
+  public disableAITranslation(): void {
+    this.aiTranslationEnabled = false;
+    if (this.currentTrack) {
+      this.selectTrack(this.currentTrack.id);
+    }
+  }
+
+  /**
+   * AI Translation wrapper that intercepts parsed ASS lines.
+   */
+  private async translateSubtitles(content: string, targetLanguage: string): Promise<string> {
+    const lines = content.split('\n');
+    const translatedLines = await Promise.all(lines.map(async (line) => {
+      if (line.trim().startsWith('Dialogue:')) {
+        const parts = line.split(',');
+        if (parts.length >= 10) {
+          const textIndex = 9;
+          const text = parts.slice(textIndex).join(',');
+          
+          // Mock API call to translator
+          // In a real implementation, this would batch lines and call an LLM/DeepL API
+          const translatedText = `[AI ${targetLanguage.toUpperCase()}] ${text}`;
+          
+          return [...parts.slice(0, textIndex), translatedText].join(',');
+        }
+      }
+      return line;
+    }));
+    return translatedLines.join('\n');
   }
 
   /**

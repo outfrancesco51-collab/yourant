@@ -17,6 +17,8 @@ import (
 	"yourant/internal/api"
 	"yourant/internal/downloader"
 	"yourant/internal/storage"
+	"yourant/internal/ountsu"
+	"yourant/internal/community"
 )
 
 type Config struct {
@@ -92,11 +94,18 @@ func main() {
 		log.Fatalf("[FATAL] Failed to initialize download manager: %v\n", err)
 	}
 
+	ountsuHub := ountsu.NewHub()
+	banSystem := community.NewBanSystem()
+	autoMod := community.NewAutoMod(banSystem)
+
 	// 3. Initialize Router with Dependencies
 	router := api.NewRouter(api.RouterConfig{
 		DownloadsDir: absDownloadsDir,
 		StaticDir:    cfg.StaticDir,
 		Version:      "1.0.0",
+		OuntsuHub:    ountsuHub,
+		BanSystem:    banSystem,
+		AutoMod:      autoMod,
 	}, anilistClient, libraryStore, downloadManager)
 
 	// 4. Configure HTTP Server

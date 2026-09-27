@@ -13,6 +13,22 @@ const { spawn } = require("child_process");
 const http = require("http");
 const { pathToFileURL } = require("url");
 const { CastSender } = require("./sender");
+const DiscordRPC = require("discord-rpc");
+
+// Discord RPC Setup
+const discordClientId = '1300000000000000000'; // arbitrary client id for Yourant
+DiscordRPC.register(discordClientId);
+const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+let rpcReady = false;
+
+rpc.on('ready', () => {
+  console.log('[Main] Discord RPC Ready');
+  rpcReady = true;
+});
+
+rpc.login({ clientId: discordClientId }).catch((err) => {
+  console.warn('[Main] Discord RPC Login Failed:', err.message);
+});
 
 // Server configuration constants
 const SERVER_PORT = 8080;
@@ -547,6 +563,60 @@ function registerIpcHandlers() {
   ipcMain.handle("cast:getLanIP", async () => {
     const sender = ensureCastSender();
     return sender.getLanIP();
+  });
+
+  // Discord RPC
+  ipcMain.on("update-presence", (_, presenceData) => {
+    if (rpcReady) {
+      rpc.setActivity(presenceData).catch(console.error);
+    }
+  });
+
+  // AnimeUnity Source Integration
+  ipcMain.handle("extract-animeunity-stream", async (_, url) => {
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+      const hiddenWin = new BrowserWindow({
+        width: 800,
+        height: 600,
+        show: false,
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          sandbox: true,
+        },
+      });
+
+      const filter = {
+        urls: ['*://*/*.m3u8*', '*://*/*.mp4*'],
+      };
+
+      hiddenWin.webContents.session.webRequest.onBeforeRequest(filter, (details, callback) => {
+        if (!resolved && (details.url.includes('.m3u8') || details.url.includes('.mp4'))) {
+          resolved = true;
+          resolve(details.url);
+          hiddenWin.close();
+        }
+        callback({ cancel: false });
+      });
+
+      hiddenWin.loadURL(url).catch((err) => {
+        if (!resolved) {
+          resolved = true;
+          reject(err);
+          hiddenWin.close();
+        }
+      });
+
+      // 15 seconds timeout
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          reject(new Error("Timeout extracting AnimeUnity stream"));
+          hiddenWin.close();
+        }
+      }, 15000);
+    });
   });
 }
 

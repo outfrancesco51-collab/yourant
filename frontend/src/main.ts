@@ -11,6 +11,7 @@ import { ShaderBackground } from './glsl/ShaderBackground';
 import { CinemaModeManager } from './cinema/CinemaMode';
 import { Player } from './components/Player';
 import { WatchPartyModal } from './party/WatchPartyModal';
+import { Ountsu } from './components/Ountsu';
 
 import vertShader from './glsl/background.vert?raw';
 import fragShader from './glsl/background.frag?raw';
@@ -106,6 +107,9 @@ class App {
 
     // 6. Mount Watch Party Drawer Modal
     this.watchPartyModal = new WatchPartyModal();
+
+    // 7. Mount Ountsu Voice Widget
+    (window as any).ountsuWidget = new Ountsu();
   }
 
   private setupEventListeners() {
