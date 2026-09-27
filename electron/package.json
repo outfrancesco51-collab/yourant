@@ -1,6 +1,6 @@
 {
   "name": "yourant-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Standalone desktop application for Yourant anime tracking and streaming",
   "main": "main.js",
   "author": "Yourant Team",
@@ -37,7 +37,11 @@
       "preload.js",
       "sender.js",
       "package.json",
-      "../frontend/dist/**/*"
+      {
+        "from": "../frontend/dist",
+        "to": "frontend/dist",
+        "filter": ["**/*"]
+      }
     ],
     "extraResources": [
       {
