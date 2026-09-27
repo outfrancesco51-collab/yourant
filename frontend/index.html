@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yourant — Anime Tracking &amp; Streaming</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+    <link rel="stylesheet" href="/src/theme.css" />
+    <link rel="stylesheet" href="/src/cinema/cinema.css" />
+    <link rel="stylesheet" href="/src/components/player.css" />
+  </head>
+  <body>
+    <!-- Fullscreen WebGL Canvas for GLSL Background -->
+    <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+    <!-- Main Application Shell -->
+    <div id="app" class="app-shell">
+      <!-- Collapsible Sidebar -->
+      <aside id="sidebar-container" class="sidebar collapsed"></aside>
+
+      <!-- Main Content Area -->
+      <div class="main-wrapper">
+        <!-- Top App Bar / Search Header -->
+        <header class="app-header">
+          <div class="header-left">
+            <button id="sidebar-toggle" class="icon-btn" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="brand-title">YOURANT <span class="badge-accent">STREAM</span></div>
+          </div>
+
+          <div class="header-center">
+            <div class="search-bar">
+              <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="global-search" placeholder="Search anime title, studio, genre..." autocomplete="off" />
+              <button id="search-clear" class="search-clear hidden" aria-label="Clear Search">&times;</button>
+            </div>
+          </div>
+
+          <div class="header-right">
+            <button id="header-watchparty-btn" class="header-wp-btn" title="Open Watch Party">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              <span>Watch Party</span>
+            </button>
+            <div id="backend-status-pill" class="status-pill status-loading">
+              <span class="status-dot"></span>
+              <span class="status-label">Connecting</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <main id="content-container" class="content-container">
+          <!-- Hero Banner Section -->
+          <section id="hero-container" class="hero-section"></section>
+
+          <!-- Tab Navigation / Filter Header -->
+          <nav class="content-tabs">
+            <div class="tabs-group" id="main-tabs">
+              <button class="tab-btn active" data-tab="trending">Trending Now</button>
+              <button class="tab-btn" data-tab="popular">All-Time Popular</button>
+              <button class="tab-btn" data-tab="library">My Library</button>
+              <button class="tab-btn" data-tab="downloads">Offline Media</button>
+            </div>
+            <div id="library-filter-group" class="filter-group hidden">
+              <button class="filter-pill active" data-status="ALL">All</button>
+              <button class="filter-pill" data-status="CURRENT">Watching</button>
+              <button class="filter-pill" data-status="PLANNING">Planning</button>
+              <button class="filter-pill" data-status="COMPLETED">Completed</button>
+            </div>
+          </nav>
+
+          <!-- Media Section & Grid -->
+          <section id="media-section" class="media-section">
+            <div id="section-title" class="section-title">Trending Anime</div>
+            <div id="media-grid" class="media-grid"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- Media Detail Modal Container -->
+    <div id="modal-container" class="modal-root"></div>
+
+    <!-- Video Player Container (Cinema Mode & Web Audio Player) -->
+    <div id="player-modal" class="player-overlay hidden">
+      <div class="player-modal-inner">
+        <button id="player-close-btn" class="modal-close-btn" title="Close Player" aria-label="Close Player">&times;</button>
+        <div id="player-container"></div>
+      </div>
+    </div>
+
+    <!-- Entry Point Script -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+.agents/
+.gemini/
+downloads/
+frontend/node_modules/
+frontend/dist/
+bin/
+*.exe

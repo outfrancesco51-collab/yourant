@@ -1,0 +1,29 @@
+[
+  {
+    "id": 154587,
+    "mediaId": 154587,
+    "title": "Frieren: Beyond Journey's End",
+    "status": "CURRENT",
+    "progress": 14,
+    "totalEpisodes": 28,
+    "score": 9.5,
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx154587-n2bOfvZihioS.png",
+    "startedAt": "2026-09-12T22:31:46.1583354+02:00",
+    "createdAt": "2026-09-12T22:31:46.1583354+02:00",
+    "updatedAt": "2026-09-26T22:31:46.1583354+02:00"
+  },
+  {
+    "id": 16498,
+    "mediaId": 16498,
+    "title": "Attack on Titan",
+    "status": "COMPLETED",
+    "progress": 25,
+    "totalEpisodes": 25,
+    "score": 9,
+    "coverImage": "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx16498-C6FPmWm59CyP.jpg",
+    "startedAt": "2026-09-12T22:31:46.1583354+02:00",
+    "completedAt": "2026-09-24T22:31:46.1583354+02:00",
+    "createdAt": "2026-09-12T22:31:46.1583354+02:00",
+    "updatedAt": "2026-09-26T22:31:46.1583354+02:00"
+  }
+]
