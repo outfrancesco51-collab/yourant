@@ -4,6 +4,7 @@
   "description": "Standalone desktop application for Yourant anime tracking and streaming",
   "main": "main.js",
   "author": "Yourant Team",
+  "repository": "https://github.com/outfrancesco51-collab/yourant",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
