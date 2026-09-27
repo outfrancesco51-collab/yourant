@@ -15,6 +15,9 @@ import { AudioBoosterManager, VolumeState } from '../audio/AudioBooster';
 import { CinemaModeManager } from '../cinema/CinemaMode';
 import { partySync } from '../party/WatchPartySync';
 import { WatchPartyMessage } from '../api/ws';
+import { SubtitleManager } from '../subtitles/SubtitleManager';
+import { SubtitleTrack } from '../subtitles/types';
+import '../subtitles/subtitles.css';
 
 export interface PlayerOptions {
   container: HTMLElement;
@@ -22,6 +25,7 @@ export interface PlayerOptions {
   title?: string;
   poster?: string;
   cinemaManager?: CinemaModeManager;
+  subtitleTracks?: SubtitleTrack[];
   onPlay?: () => void;
   onPause?: () => void;
   onSeek?: (timestamp: number) => void;
@@ -35,6 +39,15 @@ export class Player {
   private booster!: AudioBoosterManager;
   private cinemaManager: CinemaModeManager;
   private options: PlayerOptions;
+
+  // Subtitle Subsystem
+  private subtitleManager!: SubtitleManager;
+  private subtitleBtn!: HTMLButtonElement;
+  private subtitleBadge!: HTMLElement;
+  private subtitleMenu!: HTMLElement;
+  private subtitleTracksContainer!: HTMLElement;
+  private subtitleDelayDisplay!: HTMLElement;
+  private isSubtitleMenuOpen: boolean = false;
 
   // DOM Elements
   private playPauseBtn!: HTMLButtonElement;
@@ -70,6 +83,7 @@ export class Player {
 
     this.render();
     this.initAudioBooster();
+    this.initSubtitleManager();
     this.bindEvents();
     this.resetIdleTimer();
 
@@ -175,6 +189,14 @@ export class Player {
             <!-- Playback Rate Selector -->
             <button class="ctrl-btn btn-rate" title="Playback Speed">1.0x</button>
 
+            <!-- Subtitle Toggle / Picker Button -->
+            <button class="ctrl-btn btn-subtitles" title="Subtitles (S)" aria-label="Subtitles">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
+              </svg>
+              <span class="sub-track-badge">OFF</span>
+            </button>
+
             <!-- Cinema Mode Toggle -->
             <button class="ctrl-btn btn-cinema" title="Cinema Mode (C)">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -193,6 +215,44 @@ export class Player {
               </svg>
             </button>
           </div>
+        </div>
+      </div>
+
+      <!-- Subtitle Menu Drawer / Popup -->
+      <div class="player-subtitle-menu hidden">
+        <div class="sub-menu-header">
+          <div class="sub-menu-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
+            </svg>
+            <span>Subtitles</span>
+          </div>
+          <button class="btn-close-sub-menu" aria-label="Close subtitle menu">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="sub-menu-tracks"></div>
+        <div class="sub-menu-delay">
+          <div class="sub-delay-label-row">
+            <span>Subtitle Delay:</span>
+            <span class="sub-delay-val">0.0s</span>
+          </div>
+          <div class="sub-delay-controls">
+            <button class="btn-sub-delay btn-delay-minus">-0.1s</button>
+            <button class="btn-sub-delay btn-delay-plus">+0.1s</button>
+            <button class="btn-sub-delay-reset">Reset</button>
+          </div>
+        </div>
+        <div class="sub-menu-upload">
+          <label class="btn-sub-upload">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+            </svg>
+            <span>Load Subtitle File</span>
+            <input type="file" class="sub-file-input" accept=".ass,.ssa,.srt,.vtt" />
+          </label>
         </div>
       </div>
 
@@ -216,6 +276,11 @@ export class Player {
     this.volumeTrackFill = this.container.querySelector('.volume-fill-bar')!;
     this.volumeBadge = this.container.querySelector('.volume-badge')!;
     this.playbackRateBtn = this.container.querySelector('.btn-rate')!;
+    this.subtitleBtn = this.container.querySelector('.btn-subtitles')!;
+    this.subtitleBadge = this.container.querySelector('.sub-track-badge')!;
+    this.subtitleMenu = this.container.querySelector('.player-subtitle-menu')!;
+    this.subtitleTracksContainer = this.container.querySelector('.sub-menu-tracks')!;
+    this.subtitleDelayDisplay = this.container.querySelector('.sub-delay-val')!;
     this.cinemaBtn = this.container.querySelector('.btn-cinema')!;
     this.fullscreenBtn = this.container.querySelector('.btn-fullscreen')!;
     this.floatingChatContainer = this.container.querySelector('.player-floating-chat')!;
@@ -351,6 +416,70 @@ export class Player {
       const isFs = !!document.fullscreenElement;
       this.fullscreenBtn.querySelector('.icon-fs-enter')!.classList.toggle('hidden', isFs);
       this.fullscreenBtn.querySelector('.icon-fs-exit')!.classList.toggle('hidden', !isFs);
+      this.subtitleManager.resize();
+    });
+
+    // 6b. Subtitle Controls & Menu
+    this.subtitleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleSubtitleMenu();
+    });
+
+    this.subtitleMenu.querySelector('.btn-close-sub-menu')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.closeSubtitleMenu();
+    });
+
+    this.subtitleMenu.querySelector('.btn-delay-minus')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.subtitleManager.setDelay(this.subtitleManager.getDelay() - 0.1);
+    });
+
+    this.subtitleMenu.querySelector('.btn-delay-plus')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.subtitleManager.setDelay(this.subtitleManager.getDelay() + 0.1);
+    });
+
+    this.subtitleMenu.querySelector('.btn-sub-delay-reset')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.subtitleManager.setDelay(0);
+    });
+
+    const fileInput = this.subtitleMenu.querySelector('.sub-file-input') as HTMLInputElement | null;
+    fileInput?.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const text = ev.target?.result as string;
+        if (!text) return;
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'ass';
+        const type = (ext === 'srt' ? 'srt' : ext === 'vtt' ? 'vtt' : 'ass');
+        const track: SubtitleTrack = {
+          id: `custom-${Date.now()}`,
+          label: file.name,
+          language: 'custom',
+          type,
+          content: text,
+        };
+        await this.subtitleManager.addTrack(track, true);
+        fileInput.value = '';
+      };
+      reader.readAsText(file);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (this.isSubtitleMenuOpen && !this.subtitleMenu.contains(e.target as Node) && !this.subtitleBtn.contains(e.target as Node)) {
+        this.closeSubtitleMenu();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      this.subtitleManager.resize();
+    });
+
+    this.video.addEventListener('loadedmetadata', () => {
+      this.subtitleManager.resize();
     });
 
     // 7. Time & Buffer updates
@@ -519,6 +648,11 @@ export class Player {
           e.preventDefault();
           this.toggleFullscreen();
           break;
+        case 's':
+        case 'S':
+          e.preventDefault();
+          this.cycleSubtitles();
+          break;
         case '0': case '1': case '2': case '3': case '4':
         case '5': case '6': case '7': case '8': case '9':
           e.preventDefault();
@@ -607,9 +741,195 @@ export class Player {
     }
   }
 
-  public loadSource(url: string) {
+  public loadSource(url: string, subtitleTracks?: SubtitleTrack[]) {
     this.video.src = url;
     this.video.load();
+    if (subtitleTracks && subtitleTracks.length > 0) {
+      this.subtitleManager.setTracks(subtitleTracks);
+    }
+  }
+
+  // =========================================================================
+  // Subtitle Subsystem Helper APIs
+  // =========================================================================
+  private initSubtitleManager() {
+    this.subtitleManager = new SubtitleManager(this.video, this.container);
+
+    this.subtitleManager.addEventListener('trackchange', () => {
+      this.updateSubtitleUI();
+    });
+
+    this.subtitleManager.addEventListener('trackschange', () => {
+      this.renderSubtitleTracksList();
+    });
+
+    this.subtitleManager.addEventListener('delaychange', (e: Event) => {
+      const customEv = e as CustomEvent<{ delay: number }>;
+      if (this.subtitleDelayDisplay) {
+        const d = customEv.detail.delay;
+        this.subtitleDelayDisplay.textContent = `${d >= 0 ? '+' : ''}${d.toFixed(1)}s`;
+      }
+    });
+
+    const tracks = this.options.subtitleTracks || this.getDefaultDemoTracks();
+    this.subtitleManager.setTracks(tracks);
+  }
+
+  public getSubtitleManager(): SubtitleManager {
+    return this.subtitleManager;
+  }
+
+  public setSubtitleTracks(tracks: SubtitleTrack[]) {
+    this.subtitleManager.setTracks(tracks);
+  }
+
+  public async cycleSubtitles(): Promise<void> {
+    const nextTrack = await this.subtitleManager.cycleTrack();
+    this.updateSubtitleUI();
+    this.showSubtitleHudNotification(nextTrack ? nextTrack.label : 'Subtitles Off');
+  }
+
+  public toggleSubtitleMenu(): void {
+    if (this.isSubtitleMenuOpen) {
+      this.closeSubtitleMenu();
+    } else {
+      this.openSubtitleMenu();
+    }
+  }
+
+  public openSubtitleMenu(): void {
+    this.isSubtitleMenuOpen = true;
+    this.subtitleMenu.classList.remove('hidden');
+    this.renderSubtitleTracksList();
+  }
+
+  public closeSubtitleMenu(): void {
+    this.isSubtitleMenuOpen = false;
+    this.subtitleMenu.classList.add('hidden');
+  }
+
+  private updateSubtitleUI(): void {
+    const current = this.subtitleManager.getCurrentTrack();
+    if (current) {
+      this.subtitleBtn.classList.add('active');
+      const tag = current.language ? current.language.toUpperCase() : (current.type === 'pgs' ? 'PGS' : 'SUB');
+      this.subtitleBadge.textContent = tag.substring(0, 3);
+    } else {
+      this.subtitleBtn.classList.remove('active');
+      this.subtitleBadge.textContent = 'OFF';
+    }
+    this.renderSubtitleTracksList();
+  }
+
+  private renderSubtitleTracksList(): void {
+    if (!this.subtitleTracksContainer) return;
+    this.subtitleTracksContainer.innerHTML = '';
+
+    const current = this.subtitleManager.getCurrentTrack();
+    const tracks = this.subtitleManager.getTracks();
+
+    // Off option
+    const offItem = document.createElement('button');
+    offItem.className = `sub-track-item ${!current ? 'selected' : ''}`;
+    offItem.innerHTML = `
+      <div class="sub-track-item-left">
+        <span class="sub-track-radio"></span>
+        <span class="sub-track-name">Off</span>
+      </div>
+      <span class="sub-track-tag">None</span>
+    `;
+    offItem.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await this.subtitleManager.selectTrack(null);
+    });
+    this.subtitleTracksContainer.appendChild(offItem);
+
+    // Track items
+    tracks.forEach((track) => {
+      const isSelected = current && current.id === track.id;
+      const item = document.createElement('button');
+      item.className = `sub-track-item ${isSelected ? 'selected' : ''}`;
+      const typeLabel = track.type.toUpperCase();
+      item.innerHTML = `
+        <div class="sub-track-item-left">
+          <span class="sub-track-radio"></span>
+          <span class="sub-track-name">${this.escapeHtml(track.label)}</span>
+        </div>
+        <span class="sub-track-tag">${typeLabel}</span>
+      `;
+      item.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await this.subtitleManager.selectTrack(track.id);
+      });
+      this.subtitleTracksContainer.appendChild(item);
+    });
+  }
+
+  private showSubtitleHudNotification(text: string): void {
+    let hud = this.container.querySelector('.player-sub-hud-toast') as HTMLElement;
+    if (!hud) {
+      hud = document.createElement('div');
+      hud.className = 'player-sub-hud-toast';
+      hud.style.cssText = 'position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.85); backdrop-filter: blur(10px); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; pointer-events: none; z-index: 30; transition: opacity 0.3s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.6);';
+      this.container.appendChild(hud);
+    }
+    hud.textContent = text;
+    hud.style.opacity = '1';
+    setTimeout(() => {
+      if (hud) hud.style.opacity = '0';
+    }, 1500);
+  }
+
+  private getDefaultDemoTracks(): SubtitleTrack[] {
+    return [
+      {
+        id: 'demo-ass',
+        label: 'English [ASS Fansub] (Worker)',
+        language: 'en',
+        type: 'ass',
+        default: false,
+        content: `[Script Info]
+Title: Yourant Demo ASS
+ScriptType: v4.00+
+WrapStyle: 0
+PlayResX: 1920
+PlayResY: 1080
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Roboto Medium,52,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2.5,1,2,30,30,30,0
+Style: BloodRed,Roboto Medium,56,&H001D1DE1,&H000000FF,&H00F8BD38,&H00000000,1,0,0,0,100,100,0,0,1,3.0,1,2,30,30,30,0
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.00,0:00:06.00,Default,,0,0,0,,{\\b1}Welcome to Yourant Streaming{\\b0}\\NPowered by \\c&H38BDF8&jassub-worker.js\\c&HFFFFFF& (WASM libass)
+Dialogue: 0,0:00:06.50,0:00:13.00,BloodRed,,0,0,0,,Metallic Blue & Blood Red Theme Active
+Dialogue: 0,0:00:13.50,0:00:20.00,Default,,0,0,0,,Volume Booster graph up to {\\b1}1000%{\\b0} available
+Dialogue: 0,0:00:20.50,0:00:30.00,Default,,0,0,0,,Press {\\b1}S{\\b0} to cycle subtitle tracks
+`
+      },
+      {
+        id: 'demo-pgs',
+        label: 'English [Blu-ray PGS] (Worker)',
+        language: 'pgs',
+        type: 'pgs',
+        default: false,
+        events: [
+          {
+            startTime: 1.0,
+            duration: 6.0,
+            imageData: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJYAAAAwCAYAAAD7G8b8AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAA8SURBVHhe7cExAQAAAMKg9U9tCy8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOBqBiIAAZv17t4AAAAASUVORK5CYII=',
+            width: 150,
+            height: 48,
+            x: 245,
+            y: 300,
+            canvasWidth: 640,
+            canvasHeight: 360,
+          }
+        ]
+      }
+    ];
   }
 
   // =========================================================================
@@ -656,6 +976,7 @@ export class Player {
       window.removeEventListener('yourant:wp-chat', this.chatListener);
       this.chatListener = null;
     }
+    this.subtitleManager.destroy();
     partySync.detachVideo();
     this.video.pause();
     this.video.src = '';

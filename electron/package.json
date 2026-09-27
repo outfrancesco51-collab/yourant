@@ -1,0 +1,96 @@
+{
+  "name": "yourant-desktop",
+  "version": "1.0.0",
+  "description": "Standalone desktop application for Yourant anime tracking and streaming",
+  "main": "main.js",
+  "author": "Yourant Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "cross-env NODE_ENV=development electron .",
+    "build": "electron-builder build",
+    "build:win": "electron-builder build --win --x64",
+    "build:linux": "electron-builder build --linux --x64",
+    "build:mac": "electron-builder build --mac --arm64",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "castv2": "^0.1.10",
+    "mdns-js": "^1.0.3"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "app.yourant.desktop",
+    "productName": "Yourant",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "sender.js",
+      "package.json",
+      "../frontend/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "binaries",
+        "to": "binaries"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "yourant-desktop-${version}_Windows_${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Yourant"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "AudioVideo",
+      "artifactName": "yourant-desktop-${version}_Linux_${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.entertainment",
+      "artifactName": "yourant-desktop-${version}_macOS_${arch}.${ext}"
+    }
+  }
+}
