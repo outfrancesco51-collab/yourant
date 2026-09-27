@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DownloadUrl = "https://github.com/outfrancesco51/Yourant/releases/latest/download/"
+	DownloadUrl = "https://github.com/5rahim/seanime/releases/latest/download/"
 )
 
 func main() {
@@ -26,20 +26,20 @@ func main() {
 		Sig    string
 	}{
 		"MacOS_arm64": {
-			Asset: fmt.Sprintf("Yourant-desktop-%s_MacOS_arm64.app.tar.gz", version),
-			Sig:   fmt.Sprintf("Yourant-desktop-%s_MacOS_arm64.app.tar.gz.sig", version),
+			Asset: fmt.Sprintf("seanime-desktop-%s_MacOS_arm64.app.tar.gz", version),
+			Sig:   fmt.Sprintf("seanime-desktop-%s_MacOS_arm64.app.tar.gz.sig", version),
 		},
 		"MacOS_x86_64": {
-			Asset: fmt.Sprintf("Yourant-desktop-%s_MacOS_x86_64.app.tar.gz", version),
-			Sig:   fmt.Sprintf("Yourant-desktop-%s_MacOS_x86_64.app.tar.gz.sig", version),
+			Asset: fmt.Sprintf("seanime-desktop-%s_MacOS_x86_64.app.tar.gz", version),
+			Sig:   fmt.Sprintf("seanime-desktop-%s_MacOS_x86_64.app.tar.gz.sig", version),
 		},
 		"Linux_x86_64": {
-			Asset: fmt.Sprintf("Yourant-desktop-%s_Linux_x86_64.AppImage", version),
-			Sig:   fmt.Sprintf("Yourant-desktop-%s_Linux_x86_64.AppImage.sig", version),
+			Asset: fmt.Sprintf("seanime-desktop-%s_Linux_x86_64.AppImage", version),
+			Sig:   fmt.Sprintf("seanime-desktop-%s_Linux_x86_64.AppImage.sig", version),
 		},
 		"Windows_x86_64": {
-			AppZip: fmt.Sprintf("Yourant-desktop-%s_Windows_x86_64.exe", version),
-			Sig:    fmt.Sprintf("Yourant-desktop-%s_Windows_x86_64.sig", version),
+			AppZip: fmt.Sprintf("seanime-desktop-%s_Windows_x86_64.exe", version),
+			Sig:    fmt.Sprintf("seanime-desktop-%s_Windows_x86_64.sig", version),
 		},
 	}
 

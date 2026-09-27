@@ -134,24 +134,3 @@ type PageResult struct {
 	PageInfo PageInfo     `json:"pageInfo"`
 	Items    []AnimeMedia `json:"items"`
 }
-
-// graphQLRequest payload for AniList POST API.
-type graphQLRequest struct {
-	Query     string         `json:"query"`
-	Variables map[string]any `json:"variables"`
-}
-
-// graphQLResponse wrapper for AniList GraphQL.
-type graphQLResponse struct {
-	Data struct {
-		Page struct {
-			PageInfo PageInfo     `json:"pageInfo"`
-			Media    []AnimeMedia `json:"media"`
-		} `json:"Page"`
-		Media *AnimeMedia `json:"Media"`
-	} `json:"data"`
-	Errors []struct {
-		Message string `json:"message"`
-		Status  int    `json:"status"`
-	} `json:"errors"`
-}
